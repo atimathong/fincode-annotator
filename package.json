@@ -1,0 +1,74 @@
+{
+  "name": "fincode-annotator",
+  "displayName": "fincode-annotator",
+  "description": "The VS code extension to annotate the code block against the regulations used in Financial Technology.",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.79.0"
+  },
+  "author": "Atima Thongsomboon",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/atimathong/fincode-annotator/issues"
+  },
+  "homepage": "https://github.com/atimathong/fincode-annotator#readme",
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "fincode-annotator.helloWorld"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "fincode-annotator.helloWorld",
+        "title": "Hello World"
+      },
+      {
+        "command": "fincode-annotator.annotate",
+        "title": "Get annotated"
+      },
+      {
+        "command": "fincode-annotator.printReferences",
+        "title": "Show Ref"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "fincode-annotator.printReferences",
+          "when": "editorHasReferenceProvider",
+          "group": "navigation@1.31"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "pretest": "npm run lint",
+    "test": "node ./test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.79.0",
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "20.2.5",
+    "eslint": "^8.41.0",
+    "glob": "^8.1.0",
+    "mocha": "^10.2.0",
+    "typescript": "^5.1.3",
+    "@vscode/test-electron": "^2.3.2"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "generator-code": "^1.7.6",
+    "yo": "^4.3.1",
+    "airtable": "^0.12.1",
+    "ast": "^1.0.7",
+    "dotenv": "^16.1.0",
+    "http": "^0.0.1-security",
+    "pegjs": "^0.10.0",
+    "vscode": "^1.1.37"
+  }
+}
