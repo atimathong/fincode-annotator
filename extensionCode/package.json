@@ -1,0 +1,90 @@
+{
+  "name": "fincode-annotator",
+  "displayName": "Code Annotator",
+  "description": "Testing initial version",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.78.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onView:fincode-starter"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "fincode-starter",
+          "title": "Fincode starter",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "fincode-starter": [
+        {
+          "id": "welcomeFincode",
+          "name": "Welcome to Annotator",
+          "icon": "media/icon.svg",
+          "contextualTitle": "Fincode"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "welcomeFincode",
+        "contents": "[Hello](command:fincode-annotator.helloWorld)\n[Bye](command:fincode-annotator.helloWorld)"
+      }
+    ],
+    "commands": [
+      {
+        "command": "fincode-annotator.helloWorld",
+        "title": "Hello World"
+      },
+      {
+        "command": "fincode-annotator.annotate",
+        "title": "Get annotated"
+      },
+      {
+        "command": "fincode-annotator.printReferences",
+        "title": "Show Ref"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "fincode-annotator.printReferences",
+          "when": "editorHasReferenceProvider",
+          "group": "navigation@1.31"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "pretest": "npm run lint",
+    "test": "node ./test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "16.x",
+    "@types/vscode": "^1.78.0",
+    "@vscode/test-electron": "^2.3.0",
+    "eslint": "^8.39.0",
+    "glob": "^8.1.0",
+    "mocha": "^10.2.0",
+    "typescript": "^5.0.4"
+  },
+  "dependencies": {
+    "airtable": "^0.12.1",
+    "ast": "^1.0.7",
+    "dotenv": "^16.1.0",
+    "http": "^0.0.1-security",
+    "pegjs": "^0.10.0",
+    "vscode": "^1.1.37"
+  }
+}
