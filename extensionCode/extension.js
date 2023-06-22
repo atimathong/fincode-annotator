@@ -6,7 +6,15 @@ const {
   matchVarToKeywords,
 } = require("./src/helperFunction/matchVarToKeywords.js");
 const { countOccurrence } = require("./src/helperFunction/countOccurrence.js");
-const { Provider, encodeLocation } = require("./provider.js");
+const {
+  Provider,
+  encodeLocation,
+} = require("./src/supporter/contentProvider.js");
+const { multiStepInput } = require("./src/supporter/multipleStepInput.js");
+const AnnotateCodeWebViewProvider = require("./src/supporter/webViewProvider.js");
+const {
+  writeAnnotationReport,
+} = require("./src/helperFunction/writeAnnotationReport.js");
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -82,7 +90,7 @@ function activate(context) {
             );
             //mapping with Air Table data: selective decoration
             addRegData = matchVarToKeywords(regData, location);
-            console.log("add", addRegData);
+            // console.log("add", addRegData);
             if (addRegData !== null) {
               const decoration = {
                 range: new vscode.Range(positionStart, positionEnd),
@@ -126,7 +134,7 @@ function activate(context) {
       }
     }
   );
-
+  let contentObj = {};
   let provider;
   let providerRegistrations;
   const commandRegistration = vscode.commands.registerTextEditorCommand(
@@ -162,13 +170,24 @@ function activate(context) {
 
       //call regulation data
       const regData = await fetchRegulationData(techType);
-      console.log("reg", regData);
+      // console.log("reg", regData);
 
       //COUNT OCCURRENCE
-      let contentObj = countOccurrence(regData, variableItems);
+      contentObj = countOccurrence(regData, variableItems);
+
+      //uri
+      const uri = encodeLocation(editor.document.uri, editor.selection.active);
+
+      //Prepare the report
+      let { report, refNum } = writeAnnotationReport(
+        text,
+        techType,
+        uri,
+        contentObj
+      );
 
       //CONTENT PROVIDER
-      provider = new Provider(contentObj);
+      provider = new Provider(report);
       // register content provider for scheme `references`
       // register document link provider for scheme `references`
       providerRegistrations = vscode.Disposable.from(
@@ -181,18 +200,65 @@ function activate(context) {
           provider
         )
       );
-      /////
-      //editor.selection.active.line = line no. of parameter
-      //editor.selection.active.character = character position of parameter
-      const uri = encodeLocation(editor.document.uri, editor.selection.active);
-      return vscode.workspace.openTextDocument(uri).then((doc) => {
-        console.log("doc", doc);
-        console.log("viewCol", editor.viewColumn);
-        vscode.window.showTextDocument(
-          doc,
-          editor.viewColumn ? editor.viewColumn + 1 : 1
+      //test webview
+      const activeEditor = vscode.window.activeTextEditor;
+      let lastLine;
+      let nextLinePosition = new vscode.Position(0, 0);
+
+      //only work when there is an active editor
+      if (activeEditor) {
+        // Get the last line number: Next line
+        lastLine = activeEditor.document.lineCount - 1;
+        // Get the position of the last line
+        nextLinePosition = new vscode.Position(lastLine + 1, 0);
+        // Output the last line position
+        console.log(`Last line position: ${JSON.stringify(nextLinePosition)}`);
+
+        const webViewProvider = new AnnotateCodeWebViewProvider(
+          context.extensionUri,
+          report,
+          refNum,
+          uri,
+          nextLinePosition
         );
-      });
+        vscode.window.registerWebviewViewProvider(
+          "fincode-annotator.showweb",
+          webViewProvider
+        );
+
+        //editor.selection.active.line = line no. of parameter
+        //editor.selection.active.character = character position of parameter
+        return vscode.workspace.openTextDocument(uri).then((doc) => {
+          vscode.window.showTextDocument(
+            doc,
+            editor.viewColumn ? editor.viewColumn + 1 : 1
+          );
+        });
+      } else {
+        vscode.window.showInformationMessage(
+          "Please open up your code file first!"
+        );
+      }
+    }
+  );
+
+  //signin
+  let signin = vscode.commands.registerCommand(
+    "fincode-annotator.signin",
+    async () => {
+      try {
+        multiStepInput
+          .multiStepInput(context)
+          .then(() =>
+            vscode.commands.executeCommand(
+              "setContext",
+              "myExtension.doneSignin",
+              true
+            )
+          );
+      } catch (error) {
+        console.log(error);
+      }
     }
   );
 
@@ -203,6 +269,7 @@ function activate(context) {
     commandRegistration,
     providerRegistrations
   );
+  context.subscriptions.push(signin);
 }
 
 // This method is called when your extension is deactivated

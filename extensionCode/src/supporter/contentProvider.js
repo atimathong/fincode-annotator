@@ -5,11 +5,11 @@
 // Object.defineProperty(exports, "__esModule", { value: true });
 // exports.decodeLocation = exports.encodeLocation = void 0;
 const vscode = require("vscode");
-const { ReferencesDocument } = require("./src/provider/referenceDocument.js");
+const { ReferencesDocument } = require("./referenceDocument.js");
 let Provider = /** @class */ (function () {
-  function Provider(content) {
+  function Provider(report) {
     let _this = this;
-    this._content = content;
+    this._report = report;
     this._onDidChange = new vscode.EventEmitter();
     this._documents = new Map();
     this._editorDecoration = vscode.window.createTextEditorDecorationType({
@@ -22,6 +22,7 @@ let Provider = /** @class */ (function () {
     ) {
       return _this._documents.delete(doc.uri.toString());
     });
+    this._annotatedData = "";
   }
   Provider.prototype.dispose = function () {
     this._subscriptions.dispose();
@@ -68,22 +69,21 @@ let Provider = /** @class */ (function () {
           );
         });
         locations.push.apply(locations, locations.splice(0, idx));
-        console.log("target", target.toString());
-        // location of another references
-        console.log("location", locations);
+
         // create document and return its early state
         let document = new ReferencesDocument(
           uri,
           locations,
           _this._onDidChange,
-          _this._content,
-          target.toString()
+          _this._report
         );
         _this._documents.set(uri.toString(), document);
-        console.log("docs", document);
+        console.log("docs", document.value);
+        _this._annotatedData = document.value;
         return document.value;
       });
   };
+
   Provider._compareLocations = function (a, b) {
     if (a.uri.toString() < b.uri.toString()) {
       return -1;
@@ -110,7 +110,6 @@ let Provider = /** @class */ (function () {
 
 let seq = 0;
 function encodeLocation(uri, pos) {
-  console.log("encodePos", pos);
   let query = JSON.stringify([uri.toString(), pos.line, pos.character]);
   console.log("query", query);
   return vscode.Uri.parse(
@@ -127,8 +126,8 @@ function decodeLocation(uri) {
     target = _a[0],
     line = _a[1],
     character = _a[2];
-  console.log("decode", uri.query);
-  console.log(target, line, character);
+  // console.log("decode", uri.query);
+  // console.log(target, line, character);
   return [vscode.Uri.parse(target), new vscode.Position(line, character)];
 }
 // exports.decodeLocation = decodeLocation;

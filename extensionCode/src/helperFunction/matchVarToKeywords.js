@@ -9,7 +9,7 @@ function matchVarToKeywords(regData, varData) {
     for (let reg of regData) {
       reg["keywords"].forEach((kw) => {
         let lowVari = varData["variable"].toLowerCase();
-        if (kw === lowVari || kw.includes(lowVari) || lowVari.includes(kw)) {
+        if (kw === lowVari || lowVari.includes(kw)) {
           console.log(kw, lowVari);
           Object.assign(addRegData, reg);
         }

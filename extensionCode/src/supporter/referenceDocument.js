@@ -1,24 +1,12 @@
 const vscode = require("vscode");
 
 class ReferencesDocument {
-  constructor(uri, locations, emitter, content, filePath) {
+  constructor(uri, locations, emitter, report) {
     this._uri = uri;
     this._locations = locations;
     this._emitter = emitter;
-    this._content = content;
-    const fileName = filePath.split("/");
-    console.log("fileName", fileName);
-    this._lines = [
-      `⚫ Code Block Name: ${fileName[fileName.length - 1]}`,
-      "❇️ Parameter Specified in the Data Source",
-    ];
-    for (let con of Object.keys(this._content)) {
-      this._lines.push(` 🔹 Number of ${con} = ${this._content[con]}`);
-    }
-    //push example hash code
-    this._lines.push(
-      "❇️ 3a2f1c8e59d74b6a1bf247f648d6ef87a9472c1385b5e9e5fb0c5d98ec1b07f3"
-    );
+    this._report = report;
+    this._lines = [this._report];
     this._links = [];
     // this._populate();
   }
